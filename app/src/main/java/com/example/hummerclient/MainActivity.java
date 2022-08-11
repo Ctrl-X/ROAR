@@ -2,7 +2,6 @@ package com.example.hummerclient;
 
 import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.Log;
@@ -10,6 +9,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -19,11 +19,11 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.hummerclient.arduino.Arduino;
 import com.example.hummerclient.arduino.ArduinoListener;
 import com.example.hummerclient.databinding.ActivityMainBinding;
-import com.example.hummerclient.vehicule.VehiculeMotion;
 import com.example.hummerclient.networking.IpChecker;
 import com.example.hummerclient.networking.TransmitterType;
 import com.example.hummerclient.networking.UdpTransmitter;
 import com.example.hummerclient.ui.home.HomeViewModel;
+import com.example.hummerclient.vehicule.VehiculeMotion;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.net.InetAddress;
@@ -34,7 +34,6 @@ import java.util.List;
 
 
 public class MainActivity extends AppCompatActivity implements MotorActionnable, ArduinoListener {
-
 
     private ActivityMainBinding binding;
     private HomeViewModel homeViewModel;
@@ -54,6 +53,11 @@ public class MainActivity extends AppCompatActivity implements MotorActionnable,
     private String dataDelimiter = "\t";
 
     private Arduino arduino;
+
+
+    private Fragment cameraFragment;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements MotorActionnable,
             StrictMode.setThreadPolicy(policy);
         }
 
-
         homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         homeViewModel.getIsServer().observe(this, isServer -> this.isServer = isServer);
         homeViewModel.getReceiverAddr().observe(this, receiverAddr -> this.receiverAddr = receiverAddr);
@@ -92,9 +95,9 @@ public class MainActivity extends AppCompatActivity implements MotorActionnable,
                 }
             }
         });
-
-
         vehiculeMotion = new VehiculeMotion(this);
+
+
     }
 
     private void startUdpTransmission() {
@@ -116,6 +119,9 @@ public class MainActivity extends AppCompatActivity implements MotorActionnable,
             homeViewModel.setStatus("En attente du serveur...");
             arduino = new Arduino(this);
             arduino.setArduinoListener(this);
+
+
+
         }
         ping = new DataSyncRunner();
         ping.start();
@@ -168,6 +174,8 @@ public class MainActivity extends AppCompatActivity implements MotorActionnable,
         }
     }
 
+
+
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
         boolean result = vehiculeMotion.onGenericMotionEvent(event);
@@ -211,6 +219,8 @@ public class MainActivity extends AppCompatActivity implements MotorActionnable,
             }
         }
     };
+
+
 
     /**
      * Data received from the server to be proceed in the client

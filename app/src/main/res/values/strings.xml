@@ -10,4 +10,6 @@
     <string name="home_switch">Est le serveur ?</string>
     <string name="home_ipAddress">Mon Address IP</string>
     <string name="pref_serverAddr"></string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="fps">fps</string>
 </resources>
