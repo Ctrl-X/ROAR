@@ -133,12 +133,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1" />
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/fragmentContainerView"
-            android:name="com.example.hummerclient.ui.video.CameraFragment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="5" />
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/fragmentContainerView"
+                android:name="com.example.hummerclient.ui.video.VideoFragment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="5"
+                android:background="#3EBA53"
+                android:visibility="visible" />
 
 
     </LinearLayout>

@@ -4,12 +4,17 @@
     <string name="title_dashboard">Unused</string>
     <string name="title_notifications">Logs</string>
     <string name="home_title">Configuration de la connexion</string>
-    <string name="home_client_ip">Adresse IP du serveur (WAN)</string>
+    <string name="home_client_ip">Adresse IP de la manette (WAN)</string>
     <string name="home_Start">Démarrer</string>
     <string name="home_Stop">Arrêter</string>
-    <string name="home_switch">Est le serveur ?</string>
-    <string name="home_ipAddress">Mon Address IP</string>
+    <string name="home_switch">Est la manette ?</string>
+    <string name="home_ipAddress">Adresse IP de la manette : </string>
     <string name="pref_serverAddr"></string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="fps">fps</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="main_rover">ROVER</string>
+    <string name="main_controller">MANETTE</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
