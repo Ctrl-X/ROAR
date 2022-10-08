@@ -1,4 +1,4 @@
-package com.example.hummerclient.ui.video;
+package com.example.hummerclient.video;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -22,6 +22,7 @@ import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.TextureView.SurfaceTextureListener;
@@ -36,9 +37,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.hummerclient.MainActivity;
 import com.example.hummerclient.databinding.FragmentVideoBinding;
 
 import java.nio.ByteBuffer;
@@ -48,6 +49,7 @@ import java.util.List;
 public class VideoFragment extends Fragment {
     private static String TAG = "ROAR";
 
+    private static final String ARG_IS_EMITTER = "isEmitter";
     private static int MAX_RES = 1080;
 
     // TODO : look at https://www.freecodecamp.org/news/android-camera2-api-take-photos-and-videos/
@@ -69,28 +71,67 @@ public class VideoFragment extends Fragment {
     private boolean cameraIsOpen;
     private WindowManager windowManager;
     private CameraDevice currentCameraDevice;
+    private MainActivity mainActivity;
 
+    private Boolean mIsEmitter = true;
+    private TextureView textureView;
 
     public static VideoFragment newInstance() {
         return new VideoFragment();
     }
 
-    private TextureView textureView;
+    public static VideoFragment newInstance(Boolean isEmitter) {
+        VideoFragment fragment = new VideoFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(ARG_IS_EMITTER, isEmitter);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mIsEmitter = getArguments().getBoolean(ARG_IS_EMITTER);
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentVideoBinding.inflate(inflater, container, false);
+        View root = binding.getRoot();
         mVideoModel = new ViewModelProvider(this).get(VideoViewModel.class);
 
-        View root = binding.getRoot();
+        mainActivity = (MainActivity) this.getActivity();
         root.setClickable(true);
         textureView = binding.textureView;
         textureView.setSurfaceTextureListener(surfaceTextureListener);
         textureView.setClickable(true);
-        textureView.setOnClickListener(v -> {
-            mVideoModel.selectNextCameraId();
+        textureView.setOnTouchListener(new View.OnTouchListener() {
+            boolean firstTouch = false;
+            long time;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == event.ACTION_DOWN) {
+                    if (firstTouch && (System.currentTimeMillis() - time) <= 300) {
+                        firstTouch = false;
+                        mVideoModel.selectNextCameraId();
+                    } else {
+                        firstTouch = true;
+                        time = System.currentTimeMillis();
+                        mainActivity.toggle();
+                        return false;
+                        //return false;Use this if you dont want to call default onTouchEvent()
+                    }
+                }
+                return false;
+            }
         });
+
 
         mVideoModel.getSelectedCameraId().observe(getViewLifecycleOwner(), integer -> {
             stopCamera();
@@ -159,6 +200,10 @@ public class VideoFragment extends Fragment {
 
 
     public void selectCamera() {
+        if (!mIsEmitter) {
+            // We don't use the camera of the receiver
+            return;
+        }
         if (cameraId == null) {
             String[] cameraIds;
             try {
@@ -189,10 +234,16 @@ public class VideoFragment extends Fragment {
                 e.printStackTrace();
             }
         }
+
     }
 
     @SuppressLint("MissingPermission")
     public void startCamera() {
+        if (!mIsEmitter) {
+            // We don't use the camera of the receiver
+            return;
+        }
+
         if (!cameraIsOpen) {
 //            Log.i(TAG, "startCamera : " + cameraId);
             try {
@@ -212,7 +263,7 @@ public class VideoFragment extends Fragment {
                             .filter(s -> s.getWidth() <= MAX_RES)
                             .max((size, previous) -> size.getHeight() * size.getWidth())
                             .get();
-//                    Log.i(TAG, "preview size : " + previewSize.getWidth() + "(w) x " + previewSize.getHeight() + "(h) ");
+                    Log.i(TAG, "preview size : " + previewSize.getWidth() + "(w) x " + previewSize.getHeight() + "(h) ");
 
                     surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
                     previewSurface = new Surface(surfaceTexture);
@@ -265,19 +316,19 @@ public class VideoFragment extends Fragment {
     }
 
     private ByteBuffer latestImageBuffer;
-        ImageReader.OnImageAvailableListener onImageAvailableListener = reader -> {
+    ImageReader.OnImageAvailableListener onImageAvailableListener = reader -> {
 //        Log.i(TAG, "onImageAvailableListener -> acquireLatestImage");
         Image image = reader.acquireLatestImage();
         latestImageBuffer = image.getPlanes()[0].getBuffer();
         updateImageOnUiThread();
         image.close();
-            // TODO : Faire la séparation client / server :
-            //  le client doit demarrer la camera et envoyer le flux dans mVideoModel et l'envoyer en UDP ensuite
-            // le client ne doit pas forcement afficher le flux video sur le surfaceView
-            // le serveur doit receptionner le flux UDP et l'afficher dans la surfaceView
-            // le serveur doit aussi envoyer le changer d'index de la caméra pour switcher de caméra
-            // le serveur ne doit pas demarrer la camera
-            // regler le probleme de rottion de la camera
+        // TODO : Faire la séparation client / server :
+        //  le client doit demarrer la camera et envoyer le flux dans mVideoModel et l'envoyer en UDP ensuite
+        // le client ne doit pas forcement afficher le flux video sur le surfaceView
+        // le serveur doit receptionner le flux UDP et l'afficher dans la surfaceView
+        // le serveur doit aussi envoyer le changer d'index de la caméra pour switcher de caméra
+        // le serveur ne doit pas demarrer la camera
+        // regler le probleme de rottion de la camera
     };
 
 

@@ -1,14 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_menuManette"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.home.MenuManetteFragment">
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:padding="10dp"
 
-    <!-- TODO: Update blank fragment layout -->
+    android:orientation="vertical"
+    tools:context=".ui.MenuManetteFragment">
+
+
+
     <TextView
+        android:id="@+id/textView_IPAddress"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:text="@string/home_ipAddress"
+        android:textAlignment="center"
+        android:textSize="16sp" />
 
-</FrameLayout>
+    <TextView
+        android:id="@+id/textView_ipTooltip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        android:textAlignment="center"
+        android:textStyle="bold" />
+    <Space
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/btnManetteAction"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:text="@string/home_Start" />
+
+
+</LinearLayout>

@@ -1,27 +1,24 @@
-package com.example.hummerclient.ui.home;
+package com.example.hummerclient.game;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.example.hummerclient.vehicule.VehiculeMotion;
-
-public class HomeViewModel extends ViewModel {
-
+public class GameModel extends ViewModel {
 
     private final MutableLiveData<String> mStatus;
 
     private final MutableLiveData<String> mMyAddr;
     private final MutableLiveData<String> mReceiverAddr;
 
-    private final MutableLiveData<Boolean> mIsServer;
+    private final MutableLiveData<Boolean> mIsRemoteController;
     private final MutableLiveData<Boolean> mIsRunning;
 
     private final MutableLiveData<Integer> mSpeed;
     private final MutableLiveData<Integer> mDirection;
 
 
-    public HomeViewModel() {
+    public GameModel() {
         mStatus = new MutableLiveData<>();
         mStatus.setValue("Non connecté");
 
@@ -31,16 +28,16 @@ public class HomeViewModel extends ViewModel {
         mMyAddr.setValue("");
 
 
-        mIsServer = new MutableLiveData<>();
-        mIsServer.setValue(false);
+        mIsRemoteController = new MutableLiveData<>();
+        mIsRemoteController.setValue(false);
         mIsRunning = new MutableLiveData<>();
         mIsRunning.setValue(false);
 
         mSpeed = new MutableLiveData<>();
-        mSpeed.setValue(VehiculeMotion.MOTOR_MAX_PWM / 2);
+        mSpeed.setValue(XboxPad.ZERO_SPEED);
 
         mDirection = new MutableLiveData<>();
-        mDirection.setValue(VehiculeMotion.SERVO_MAX_ANGLE / 2);
+        mDirection.setValue(XboxPad.ZERO_ANGLE);
     }
 
     public void setStatus(String status) {
@@ -69,13 +66,12 @@ public class HomeViewModel extends ViewModel {
     }
 
 
-    public void setIsServer(Boolean isServer) {
-        mIsServer.setValue(isServer);
+    public void setIsRemoteController(Boolean isServer) {
+        mIsRemoteController.setValue(isServer);
     }
 
-
-    public MutableLiveData<Boolean> getIsServer() {
-        return mIsServer;
+    public MutableLiveData<Boolean> getIsRemoteController() {
+        return mIsRemoteController;
     }
 
 
@@ -88,7 +84,9 @@ public class HomeViewModel extends ViewModel {
     }
 
     public void setSpeed(Integer speed) {
-        mSpeed.setValue(speed);
+        if (speed != null) {
+            mSpeed.setValue(speed);
+        }
     }
 
     public MutableLiveData<Integer> getSpeed() {
@@ -96,7 +94,10 @@ public class HomeViewModel extends ViewModel {
     }
 
     public void setDirection(Integer direction) {
-        mDirection.setValue(direction);
+        if (direction != null) {
+
+            mDirection.setValue(direction);
+        }
     }
 
     public MutableLiveData<Integer> getDirection() {

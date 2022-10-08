@@ -1,4 +1,4 @@
-package com.example.hummerclient.ui.home;
+package com.example.hummerclient.ui;
 
 import android.os.Bundle;
 
@@ -6,8 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-public class DemoCollectionAdapter extends FragmentStateAdapter {
-    public DemoCollectionAdapter(Fragment fragment) {
+public class MenuTabCollectionAdapter extends FragmentStateAdapter {
+    public MenuTabCollectionAdapter(Fragment fragment) {
         super(fragment);
     }
 

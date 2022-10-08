@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#4D000000"
+    android:clickable="false"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="20dp"
+    tools:context=".game.SpeedUIFragment">
+
+    <SeekBar
+        android:id="@+id/seekBar_speed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:max="127"
+        android:progress="64"
+        android:progressTint="#959595" />
+
+    <View
+        android:id="@+id/view_brake"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="#4ACC05" />
+
+    <SeekBar
+        android:id="@+id/seekBar_direction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:max="70"
+        android:progress="35"
+        android:progressTint="#959595" />
+
+
+</LinearLayout>

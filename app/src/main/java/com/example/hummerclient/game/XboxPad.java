@@ -1,6 +1,5 @@
-package com.example.hummerclient.vehicule;
+package com.example.hummerclient.game;
 
-import android.util.Log;
 import android.view.InputDevice;
 import android.view.InputEvent;
 import android.view.KeyEvent;
@@ -8,10 +7,13 @@ import android.view.MotionEvent;
 
 import com.example.hummerclient.MotorActionnable;
 
-public class VehiculeMotion {
+public class XboxPad {
 
     public static int SERVO_MAX_ANGLE = 70;
     public static int MOTOR_MAX_PWM = 127;
+
+    public static Integer ZERO_SPEED = XboxPad.MOTOR_MAX_PWM / 2;
+    public static Integer ZERO_ANGLE = XboxPad.SERVO_MAX_ANGLE / 2;
 
     private int direction = SERVO_MAX_ANGLE / 2; // 35 est le centre du servo
     private float acceleration = 0;
@@ -21,7 +23,7 @@ public class VehiculeMotion {
 
     private MotorActionnable motorActionnable;
 
-    public VehiculeMotion(MotorActionnable motorActionnable) {
+    public XboxPad(MotorActionnable motorActionnable) {
         this.motorActionnable = motorActionnable;
     }
 
@@ -38,7 +40,7 @@ public class VehiculeMotion {
 
     public boolean onGenericMotionEvent(MotionEvent motionEvent) {
         // Check if this event if from a D-pad and process accordingly.
-        if (VehiculeMotion.isDpadDevice(motionEvent)) {
+        if (XboxPad.isDpadDevice(motionEvent)) {
             if (!isDpadDevice(motionEvent)) {
                 return false;
             }

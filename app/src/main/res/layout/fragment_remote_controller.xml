@@ -3,15 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/fullscreenBackgroundColor"
-    android:theme="@style/ThemeOverlay.HummerClient.FullscreenContainer"
-    tools:context=".MainActivity">
+    tools:context=".game.RemoteControllerFragment">
+
+
 
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fullScreenContainer"
-        android:name="com.example.hummerclient.ui.StartMenuFragment"
+        android:id="@+id/SpeedUiView"
+        android:name="com.example.hummerclient.game.SpeedUIFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
+        android:layout_height="wrap_content" />
 </FrameLayout>

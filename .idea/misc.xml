@@ -6,15 +6,22 @@
         <entry key="../../../../layout/custom_preview.xml" value="0.13489208633093525" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.22144727564569727" />
         <entry key="app/src/main/res/layout/fragment_camera.xml" value="0.25" />
+        <entry key="app/src/main/res/layout/fragment_camera2_basic.xml" value="0.1" />
         <entry key="app/src/main/res/layout/fragment_collection_object.xml" value="0.550745646158854" />
         <entry key="app/src/main/res/layout/fragment_dashboard.xml" value="0.19947916666666668" />
         <entry key="app/src/main/res/layout/fragment_home.xml" value="0.24768521958503165" />
-        <entry key="app/src/main/res/layout/fragment_menu_rover.xml" value="0.2973705349722169" />
+        <entry key="app/src/main/res/layout/fragment_menu_manette.xml" value="0.23321990966796874" />
+        <entry key="app/src/main/res/layout/fragment_menu_rover.xml" value="0.23603973388671876" />
         <entry key="app/src/main/res/layout/fragment_notifications.xml" value="0.17255434782608695" />
-        <entry key="app/src/main/res/layout/fragment_start_menu.xml" value="0.34213307698567713" />
+        <entry key="app/src/main/res/layout/fragment_preview.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_remote_controller.xml" value="0.22331695556640627" />
+        <entry key="app/src/main/res/layout/fragment_rover.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_speed_u_i.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_start_menu.xml" value="0.1" />
         <entry key="app/src/main/res/layout/fragment_video.xml" value="0.28268432617187506" />
         <entry key="app/src/main/res/layout/old_activity_main.xml" value="0.40415459258940445" />
         <entry key="app/src/main/res/menu/bottom_nav_menu.xml" value="0.2578125" />
+        <entry key="app/src/main/res/menu/toolbar_menu.xml" value="0.1" />
       </map>
     </option>
   </component>

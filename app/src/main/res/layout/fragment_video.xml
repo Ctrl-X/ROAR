@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="#9C4747"
-    tools:context=".ui.video.VideoFragment">
+    tools:context=".video.VideoFragment">
 
     <TextView
         android:id="@+id/textView"

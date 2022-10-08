@@ -9,13 +9,13 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class UdpTransmitter extends Thread {
-    public static final int CLIENT_PORT = 2000;
-    public static final int SERVER_PORT = 2001;
+    public static final int ROVER_PORT = 2000;
+    public static final int REMOTE_CONTROLLER_PORT = 2001;
+
     public static final int MAX_UDP_DATAGRAM_LEN = 100;
 
     private final TransmitterType type;
-    private final int receiveOnPort;
-    private final int sendOnPort;
+    private final int port;
 
     private String lastMessage = null;
     private UIRunnerInterface uiRunner;
@@ -23,34 +23,37 @@ public class UdpTransmitter extends Thread {
     private String messageToSend;
     private InetAddress destAddress;
 
-    public UdpTransmitter(TransmitterType type, Boolean isServer, UIRunnerInterface obj) {
+    public UdpTransmitter(TransmitterType type,int port, UIRunnerInterface obj) {
         this.type = type;
         this.uiRunner = obj;
         this.messageToSend = null;
-        if (isServer) {
-            // The server need to receive data on server port and send data to client port
-            receiveOnPort = SERVER_PORT;
-            sendOnPort = CLIENT_PORT;
-        } else {
-            // The other way for Client
-            receiveOnPort = CLIENT_PORT;
-            sendOnPort = SERVER_PORT;
-        }
+        this.port = port;
+
+//        if (isServer) {
+//            // The server need to receive data on server port and send data to client port
+//            receiveOnPort = REMOTE_CONTROLLER_PORT;
+//            sendOnPort = ROVER_PORT;
+//        } else {
+//            // The other way for Client
+//            receiveOnPort = ROVER_PORT;
+//            sendOnPort = REMOTE_CONTROLLER_PORT;
+//        }
     }
 
     public void run() {
         String message = null;
         byte[] lmessage = new byte[MAX_UDP_DATAGRAM_LEN];
-        Log.i("ROAR", this.type.getValue() + " started... ");
 
         DatagramSocket socket = null;
         try {
+            socket = new DatagramSocket(port);
             if (TransmitterType.RECEIVER.equals(this.type)) {
-                Log.i("ROAR", "Listening on UDP port " + receiveOnPort + " ...");
-                socket = new DatagramSocket(receiveOnPort);
-            } else {
-                socket = new DatagramSocket(sendOnPort);
+                Log.i("ROAR", "Listening on UDP port " + port + " ...");
+            }else{
+                Log.i("ROAR",   "UDP Sender Ready !");
+
             }
+
             while (!this.isInterrupted()) {
                 if (TransmitterType.RECEIVER.equals(this.type)) {
                     DatagramPacket packet = new DatagramPacket(lmessage, lmessage.length);
@@ -59,10 +62,10 @@ public class UdpTransmitter extends Thread {
                     this.uiRunner.runOnUI();
                 } else {
                     if (messageToSend != null) {
-                        Log.i("ROAR", "Sending '" + messageToSend + "' to " + this.destAddress + ":" + sendOnPort);
+                        Log.i("ROAR", "Sending '" + messageToSend + "' to " + this.destAddress + ":" + port);
                         byte[] buffer = messageToSend.getBytes();
                         DatagramPacket packet = new DatagramPacket(
-                                buffer, buffer.length, this.destAddress, sendOnPort);
+                                buffer, buffer.length, this.destAddress, port);
                         socket.send(packet);
                         lastMessage = messageToSend;
                         messageToSend = null;

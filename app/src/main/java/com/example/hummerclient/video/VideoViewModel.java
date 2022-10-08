@@ -1,4 +1,4 @@
-package com.example.hummerclient.ui.video;
+package com.example.hummerclient.video;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel;
 import java.nio.ByteBuffer;
 
 public class VideoViewModel extends ViewModel {
-
 
     private final MutableLiveData<Integer> mSelectedCameraId;
     private final MutableLiveData<ByteBuffer> mImageBuffer;
@@ -23,6 +22,10 @@ public class VideoViewModel extends ViewModel {
 
     public void setImageBuffer(ByteBuffer buffer) {
         mImageBuffer.setValue(buffer);
+    }
+
+    public ByteBuffer getImageBuffer() {
+        return mImageBuffer.getValue();
     }
 
     public void selectNextCameraId() {

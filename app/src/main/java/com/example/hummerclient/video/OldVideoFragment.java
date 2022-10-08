@@ -1,4 +1,4 @@
-package com.example.hummerclient.ui.video;
+package com.example.hummerclient.video;
 
 import android.Manifest;
 import android.content.pm.PackageManager;

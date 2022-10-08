@@ -3,29 +3,33 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.MenuRoverFragment">
+    android:padding="10dp"
+    tools:context=".ui.MenuRoverFragment">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/layout_inputServer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp">
-
-        <Button
-            android:id="@+id/button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginTop="20dp"
-            android:text="@string/home_Start" />
+        android:layout_height="match_parent"
+        >
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/inputServerAddr"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/home_client_ip"
             android:layout_marginTop="10dp"
+            android:hint="@string/home_client_ip"
             android:visibility="visible" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/btnAction"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="@string/home_Start" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
