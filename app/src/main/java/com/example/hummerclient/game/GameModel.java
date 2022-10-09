@@ -23,7 +23,7 @@ public class GameModel extends ViewModel {
         mStatus.setValue("Non connecté");
 
         mReceiverAddr = new MutableLiveData<>();
-        mReceiverAddr.setValue("");
+        mReceiverAddr.setValue(null);
         mMyAddr = new MutableLiveData<>();
         mMyAddr.setValue("");
 

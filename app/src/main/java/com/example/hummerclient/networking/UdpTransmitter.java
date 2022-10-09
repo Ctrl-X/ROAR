@@ -9,8 +9,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class UdpTransmitter extends Thread {
-    public static final int ROVER_PORT = 2000;
-    public static final int REMOTE_CONTROLLER_PORT = 2001;
 
     public static final int MAX_UDP_DATAGRAM_LEN = 100;
 

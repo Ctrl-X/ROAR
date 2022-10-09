@@ -11,7 +11,7 @@ public class DataSenderRemoteController extends DataSender {
     private Integer direction = XboxPad.ZERO_ANGLE;
 
     public DataSenderRemoteController(UIRunnerInterface callback) {
-        super(UdpTransmitter.ROVER_PORT, callback);
+        super(UDP_PORT.ROVER, callback);
 
         setSleepTime(20);
     }

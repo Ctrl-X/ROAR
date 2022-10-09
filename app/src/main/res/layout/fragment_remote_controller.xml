@@ -6,7 +6,11 @@
     tools:context=".game.RemoteControllerFragment">
 
 
-
+    <TextureView
+        android:id="@+id/texture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/SpeedUiView"

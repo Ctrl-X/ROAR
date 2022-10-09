@@ -23,13 +23,14 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
-public class VideoServer {
+public class VideoServer extends Thread {
 
     //RTP variables:
     //----------------
@@ -65,6 +66,7 @@ public class VideoServer {
     final static int PAUSE = 5;
     final static int TEARDOWN = 6;
     final static int DESCRIBE = 7;
+    final static int PING = 8;
 
     static int state; //RTSP Server state == INIT or READY or PLAY
     Socket RTSPsocket; //socket used to send/receive RTSP messages
@@ -78,7 +80,7 @@ public class VideoServer {
 
     //RTCP variables
     //----------------
-    static int RTCP_RCV_PORT = 19001; //port where the client will receive the RTP packets
+    static int RTCP_RCV_PORT = UDP_PORT.CLIENT_RTCP_RCV_PORT.getValue(); //port where the client will receive the RTP packets
     static int RTCP_PERIOD = 400;     //How often to check for control events
     DatagramSocket RTCPsocket;
     RtcpReceiver rtcpReceiver;
@@ -96,13 +98,13 @@ public class VideoServer {
     //--------------------------------
     //Constructor
     //--------------------------------
-    public VideoServer(Context ctx, VideoViewModel viewModel) {
+    public VideoServer(Context ctx, VideoViewModel videoModel, UDP_PORT RTSPport) {
 
         //init RTP sending Timer
         sendDelay = FRAME_PERIOD;
         timer = null;
         context = ctx;
-        videoViewModel = viewModel;
+        videoViewModel = videoModel;
 
 
         //init congestion controller
@@ -113,92 +115,110 @@ public class VideoServer {
 
         //Video encoding and quality
         imgTranslator = new ImageTranslator(.8f);
+
+        this.RTSP_dest_port = RTSPport.getValue();
     }
 
     //------------------------------------
     //main
     //------------------------------------
-    public void start(int RTSPport) throws Exception {
+    public void run() {
+        try {
 
-        //get RTSP socket port from the command line
-        this.RTSP_dest_port = RTSPport;
+            //get RTSP socket port from the command line
 
-        //Initiate TCP connection with the client for the RTSP session
-        ServerSocket listenSocket = new ServerSocket(RTSPport);
-        this.RTSPsocket = listenSocket.accept();
-        listenSocket.close();
+            //Initiate TCP connection with the client for the RTSP session
+            ServerSocket listenSocket = null;
+            listenSocket = new ServerSocket(this.RTSP_dest_port);
 
-        //Get Client IP address
-        this.ClientIPAddr = this.RTSPsocket.getInetAddress();
+            this.RTSPsocket = listenSocket.accept();
+            listenSocket.close();
 
-        //Initiate RTSPstate
-        state = INIT;
+            //Get Client IP address
+            this.ClientIPAddr = this.RTSPsocket.getInetAddress();
 
-        //Set input and output stream filters:
-        RTSPBufferedReader = new BufferedReader(new InputStreamReader(this.RTSPsocket.getInputStream()));
-        RTSPBufferedWriter = new BufferedWriter(new OutputStreamWriter(this.RTSPsocket.getOutputStream()));
+            //Initiate RTSPstate
+            state = INIT;
 
-        //Wait for the SETUP message from the client
-        int request_type;
-        boolean done = false;
-        while (!done) {
-            request_type = this.parseRequest(); //blocking
+            //Set input and output stream filters:
+            RTSPBufferedReader = new BufferedReader(new InputStreamReader(this.RTSPsocket.getInputStream()));
+            RTSPBufferedWriter = new BufferedWriter(new OutputStreamWriter(this.RTSPsocket.getOutputStream()));
 
-            if (request_type == SETUP) {
-                done = true;
+            //Wait for the SETUP message from the client
+            int request_type;
+            boolean done = false;
+            while (!done) {
+                request_type = this.parseRequest(); //blocking
 
-                //update RTSP state
-                state = READY;
-                System.out.println("New RTSP state: READY");
+                if (request_type == SETUP) {
+                    done = true;
 
-                //Send response
-                this.sendResponse();
+                    state = READY;
 
-                //init the VideoStream object:
+                    //update RTSP state
+                    System.out.println("New RTSP state: READY");
 
-                //init RTP and RTCP sockets
-                this.RTPsocket = new DatagramSocket();
-                this.RTCPsocket = new DatagramSocket(RTCP_RCV_PORT);
+                    //Send response
+                    this.sendResponse();
+
+                    //init the VideoStream object:
+
+                    //init RTP and RTCP sockets
+                    this.RTPsocket = new DatagramSocket();
+                    this.RTCPsocket = new DatagramSocket(RTCP_RCV_PORT);
+                }
             }
+
+            //loop to handle RTSP requests
+            while (!isInterrupted()) {
+                //parse the request
+                request_type = this.parseRequest(); //blocking
+
+                if ((request_type == PLAY) && (state == READY)) {
+                    //update state
+                    state = PLAYING;
+                    //send back response
+                    this.sendResponse();
+                    //start timer
+                    this.timer = new Timer();
+                    this.timer.schedule(sendImageTask, 0, sendDelay);
+                    this.rtcpReceiver.startRcv();
+                    System.out.println("New RTSP state: PLAYING");
+                } else if ((request_type == PAUSE) && (state == PLAYING)) {
+                    //send back response
+                    this.sendResponse();
+                    this.stopTimer();
+                    this.rtcpReceiver.stopRcv();
+                    //update state
+                    state = READY;
+                    System.out.println("New RTSP state: READY");
+                } else if (request_type == TEARDOWN) {
+                    //send back response
+                    this.sendResponse();
+                    this.stopTimer();
+                    this.rtcpReceiver.stopRcv();
+                    //close sockets
+                    this.RTSPsocket.close();
+                    this.RTPsocket.close();
+
+                    System.exit(0);
+                } else if (request_type == DESCRIBE) {
+                    System.out.println("Received DESCRIBE request");
+                    this.sendDescribe();
+                } else if (request_type == PING) {
+                    System.out.println("Received DESCRIBE request");
+                    this.sendPing();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
 
-        //loop to handle RTSP requests
-        while (true) {
-            //parse the request
-            request_type = this.parseRequest(); //blocking
-
-            if ((request_type == PLAY) && (state == READY)) {
-                //send back response
-                this.sendResponse();
-                //start timer
-                this.timer = new Timer();
-                this.timer.schedule(sendImageTask, 0, sendDelay);
-                this.rtcpReceiver.startRcv();
-                //update state
-                state = PLAYING;
-                System.out.println("New RTSP state: PLAYING");
-            } else if ((request_type == PAUSE) && (state == PLAYING)) {
-                //send back response
-                this.sendResponse();
-                this.stopTimer();
-                this.rtcpReceiver.stopRcv();
-                //update state
-                state = READY;
-                System.out.println("New RTSP state: READY");
-            } else if (request_type == TEARDOWN) {
-                //send back response
-                this.sendResponse();
-                this.stopTimer();
-                this.rtcpReceiver.stopRcv();
-                //close sockets
-                this.RTSPsocket.close();
-                this.RTPsocket.close();
-
-                System.exit(0);
-            } else if (request_type == DESCRIBE) {
-                System.out.println("Received DESCRIBE request");
-                this.sendDescribe();
-            }
+    public void kill() {
+        stopTimer();
+        if (this.isAlive()) {
+            this.interrupt();
         }
     }
 
@@ -210,64 +230,68 @@ public class VideoServer {
     }
 
 
-    public void stop() {
-        this.stopTimer();
-        if (cc != null) {
-            cc.stop();
-        }
-        rtcpReceiver.stopRcv();
-    }
-
     TimerTask sendImageTask = new TimerTask() {
         public void run() {
             byte[] frame;
 
             //if the current image nb is less than the length of the video
-            if (imagenb < VIDEO_LENGTH) {
+//            if (imagenb < VIDEO_LENGTH) {
                 //update current imagenb
                 imagenb++;
 
                 try {
-                    //get next frame to send from the video, as well as its size
-                    byte[] imgBuffer = videoViewModel.getImageBuffer().array();
+                    if (videoViewModel.hasImage()) {
+                        //get next frame to send from the video, as well as its size
+                        ByteBuffer byteBuffer = null;
+//                        byte[] imgBuffer;
+//                        byteBuffer = videoViewModel.getImageBuffer();
+//                        imgBuffer = new byte[byteBuffer.remaining()];
+//                        byteBuffer.get(imgBuffer);
 
-                    int image_length = imgBuffer.length;
+                        byte[] imgBuffer = videoViewModel.getImageBuffer().getValue();
 
-                    //adjust quality of the image if there is congestion detected
-                    if (congestionLevel > 0) {
-                        imgTranslator.setCompressionQuality(1.0f - congestionLevel * 0.2f);
+                        int image_length = imgBuffer.length;
+
+                        //adjust quality of the image if there is congestion detected
+                        if (congestionLevel > 0) {
+                            imgTranslator.setCompressionQuality(1.0f - congestionLevel * 0.2f);
+                        } else {
+                            imgTranslator.setCompressionQuality(0.2f);
+                        }
+
                         frame = imgTranslator.compress(Arrays.copyOfRange(imgBuffer, 0, image_length));
                         image_length = frame.length;
                         System.arraycopy(frame, 0, imgBuffer, 0, image_length);
+
+
+                        //Builds an RTPpacket object containing the frame
+                        RTPpacket rtp_packet = new RTPpacket(MJPEG_TYPE, imagenb, imagenb * FRAME_PERIOD, imgBuffer, image_length);
+
+                        //get to total length of the full rtp packet to send
+                        int packet_length = rtp_packet.getlength();
+
+                        //retrieve the packet bitstream and store it in an array of bytes
+                        byte[] packet_bits = new byte[packet_length];
+                        rtp_packet.getpacket(packet_bits);
+
+                        //send the packet as a DatagramPacket over the UDP socket
+                        senddp = new DatagramPacket(packet_bits, packet_length, ClientIPAddr, RTP_dest_port);
+                        RTPsocket.send(senddp);
+
+                        System.out.println("Send frame #" + imagenb + ", Frame size: " + image_length + " (" + imgBuffer.length + ")");
+                        //print the header bitstream
+                        rtp_packet.printheader();
                     }
-
-                    //Builds an RTPpacket object containing the frame
-                    RTPpacket rtp_packet = new RTPpacket(MJPEG_TYPE, imagenb, imagenb * FRAME_PERIOD, imgBuffer, image_length);
-
-                    //get to total length of the full rtp packet to send
-                    int packet_length = rtp_packet.getlength();
-
-                    //retrieve the packet bitstream and store it in an array of bytes
-                    byte[] packet_bits = new byte[packet_length];
-                    rtp_packet.getpacket(packet_bits);
-
-                    //send the packet as a DatagramPacket over the UDP socket
-                    senddp = new DatagramPacket(packet_bits, packet_length, ClientIPAddr, RTP_dest_port);
-                    RTPsocket.send(senddp);
-
-                    System.out.println("Send frame #" + imagenb + ", Frame size: " + image_length + " (" + imgBuffer.length + ")");
-                    //print the header bitstream
-                    rtp_packet.printheader();
-
                 } catch (Exception ex) {
                     System.out.println("Exception caught: " + ex);
-                    System.exit(0);
+
                 }
-            } else {
-                //if we have reached the end of the video file, stop the timer
-                stopTimer();
-                rtcpReceiver.stopRcv();
-            }
+//            } else {
+//                //if we have reached the end of the video file, stop the timer
+//                // TODO : Je pense qu'il passe ici car aucune image n'est detecté et qu'il arrive a la fin du compteur
+//                stopTimer();
+//                rtcpReceiver.stopRcv();
+//            }
         }
     };
 
@@ -459,7 +483,6 @@ public class VideoServer {
             }
         } catch (Exception ex) {
             System.out.println("Exception caught: " + ex);
-            System.exit(0);
         }
 
         return (request_type);
@@ -490,28 +513,36 @@ public class VideoServer {
     //------------------------------------
     private void sendResponse() {
         try {
-            RTSPBufferedWriter.write("RTSP/1.0 200 OK" + CRLF);
+            RTSPBufferedWriter.write("RTSP/1.0 200 " + state + CRLF);
             RTSPBufferedWriter.write("CSeq: " + RTSPSeqNb + CRLF);
             RTSPBufferedWriter.write("Session: " + RTSPid + CRLF);
             RTSPBufferedWriter.flush();
             System.out.println("RTSP Server - Sent response to Client.");
         } catch (Exception ex) {
             System.out.println("Exception caught: " + ex);
-            System.exit(0);
         }
     }
 
     private void sendDescribe() {
         String des = describe();
         try {
-            RTSPBufferedWriter.write("RTSP/1.0 200 OK" + CRLF);
+            RTSPBufferedWriter.write("RTSP/1.0 200 " + state + CRLF);
             RTSPBufferedWriter.write("CSeq: " + RTSPSeqNb + CRLF);
             RTSPBufferedWriter.write(des);
             RTSPBufferedWriter.flush();
             System.out.println("RTSP Server - Sent response to Client.");
         } catch (Exception ex) {
             System.out.println("Exception caught: " + ex);
-            System.exit(0);
+        }
+    }
+
+    private void sendPing() {
+        try {
+            RTSPBufferedWriter.write("RTSP/1.0 100 " + state + CRLF);
+            RTSPBufferedWriter.flush();
+            System.out.println("RTSP Server - Sent response to Client.");
+        } catch (Exception ex) {
+            System.out.println("Exception caught: " + ex);
         }
     }
 }

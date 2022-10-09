@@ -8,7 +8,7 @@ public class DataSenderRover extends DataSender {
 
 
     public DataSenderRover(UIRunnerInterface callback) {
-        super(UdpTransmitter.REMOTE_CONTROLLER_PORT, callback);
+        super(UDP_PORT.REMOTE_CONTROLLER, callback);
         setSleepTime(2000);
     }
 

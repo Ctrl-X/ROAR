@@ -9,7 +9,9 @@ import java.nio.ByteBuffer;
 public class VideoViewModel extends ViewModel {
 
     private final MutableLiveData<Integer> mSelectedCameraId;
-    private final MutableLiveData<ByteBuffer> mImageBuffer;
+    private final MutableLiveData<byte[]> mImageBuffer;
+
+    private Boolean hasImage = false;
 
     public VideoViewModel() {
         mImageBuffer = new MutableLiveData<>();
@@ -19,21 +21,43 @@ public class VideoViewModel extends ViewModel {
     }
 
 
+    public synchronized void setImageBuffer(byte[] buffer) {
+//        byte[] arr;
+//        if (buffer == null) {
+//            arr = new byte[0];
+//        } else {
+//            buffer.flip();
+//            arr = new byte[buffer.remaining()];
+//            buffer.get(arr);
+//        }
 
-    public void setImageBuffer(ByteBuffer buffer) {
         mImageBuffer.setValue(buffer);
+        hasImage = true;
     }
 
-    public ByteBuffer getImageBuffer() {
-        return mImageBuffer.getValue();
+    public synchronized LiveData<byte[]> getImageBuffer() {
+//        ByteBuffer buf = mImageBuffer.getValue();
+//        byte[] arr;
+//        if (buf == null) {
+//            arr = new byte[0];
+//        } else {
+//            buf.flip();
+//            arr = new byte[buf.remaining()];
+//            buf.get(arr);
+//        }
+        return mImageBuffer;
     }
 
     public void selectNextCameraId() {
-        mSelectedCameraId.setValue(mSelectedCameraId.getValue()+1);
+        mSelectedCameraId.setValue(mSelectedCameraId.getValue() + 1);
     }
 
     public LiveData<Integer> getSelectedCameraId() {
         return mSelectedCameraId;
+    }
+
+    public boolean hasImage() {
+        return hasImage;
     }
 
     // TODO: Implement the ViewModel

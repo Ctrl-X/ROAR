@@ -24,8 +24,8 @@ public abstract class DataSender extends Thread {
     private long sleepTime = 20;
     protected String lastMessage = null;
 
-    public DataSender(int port, UIRunnerInterface callback) {
-        this.mEmitter = new UdpTransmitter(TransmitterType.EMITTER, port, callback);
+    public DataSender(UDP_PORT port, UIRunnerInterface callback) {
+        this.mEmitter = new UdpTransmitter(TransmitterType.EMITTER, port.getValue(), callback);
         this.mEmitter.start();
         Timer timer = new Timer();
 
@@ -38,7 +38,6 @@ public abstract class DataSender extends Thread {
 //            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
         List<String> datas = new ArrayList<>();
         try {
-            String previousMessage = null;
             while (!this.isInterrupted()) {
                 datas.clear();
                 //Log.i("ROAR", output + " TO IP " + receiverAddress);

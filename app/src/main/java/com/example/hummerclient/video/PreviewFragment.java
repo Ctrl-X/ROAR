@@ -17,6 +17,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.Image;
 import android.media.ImageReader;
 import android.media.MediaActionSound;
 import android.os.Bundle;
@@ -33,12 +34,15 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 
 import com.example.hummerclient.databinding.FragmentPreviewBinding;
 import com.example.hummerclient.video.helper.CompareSizesByArea;
 import com.example.hummerclient.video.helper.PreferenceHelper;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +59,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by yuyidong on 15-1-8.
  */
-public class PreviewFragment extends Fragment{
+public class PreviewFragment extends Fragment {
     private static final int STATE_PREVIEW = 0;
     private static final int STATE_WAITING_CAPTURE = 1;
     private static final int STATE_TRY_CAPTURE_AGAIN = 2;
@@ -73,6 +77,8 @@ public class PreviewFragment extends Fragment{
     private CameraCaptureSession mSession;
     private MediaActionSound mMediaActionSound;
     private Surface mSurface;
+    private VideoViewModel mVideoModel;
+
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
     static {
@@ -81,7 +87,6 @@ public class PreviewFragment extends Fragment{
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
-
 
 
     public static PreviewFragment newInstance() {
@@ -96,6 +101,7 @@ public class PreviewFragment extends Fragment{
         FragmentPreviewBinding binding = FragmentPreviewBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         mPreviewView = binding.texture;
+        mVideoModel = new ViewModelProvider(requireActivity()).get(VideoViewModel.class);
 
         return root;
     }
@@ -153,7 +159,7 @@ public class PreviewFragment extends Fragment{
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             Size largest;
             if (PreferenceHelper.getCameraFormat(getActivity()).equals("JPEG")) {
-                largest = Collections.max(Arrays.asList(map.getOutputSizes(android.graphics.ImageFormat.JPEG)), new CompareSizesByArea());
+                largest = Collections.min(Arrays.asList(map.getOutputSizes(android.graphics.ImageFormat.JPEG)), new CompareSizesByArea());
                 initImageReader(largest, ImageFormat.JPEG);
                 mPreviewSize = chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class), width, height, largest);
             } else {
@@ -179,13 +185,29 @@ public class PreviewFragment extends Fragment{
         }
     }
 
-
+    private byte[] latestImageBuffer;
     private ImageReader.OnImageAvailableListener mOnImageAvailableListener = new ImageReader.OnImageAvailableListener() {
 
         @Override
         public void onImageAvailable(ImageReader reader) {
 //            new Thread(new ImageSaver(reader)).start();
-            mMediaActionSound.play(MediaActionSound.SHUTTER_CLICK);
+            Image image = reader.acquireLatestImage();
+            if (image != null) {
+                ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                byte[] arr;
+                if (buffer == null) {
+                    arr = new byte[0];
+                } else {
+//                    buffer.flip();
+                    arr = new byte[buffer.remaining()];
+                    buffer.get(arr);
+                }
+                image.close();
+                latestImageBuffer = arr;
+                updateImageOnUiThread();
+            }
+
+//            mMediaActionSound.play(MediaActionSound.SHUTTER_CLICK);
         }
     };
     //    private Image mRawImage;
@@ -198,6 +220,13 @@ public class PreviewFragment extends Fragment{
 //            mMediaActionSound.play(MediaActionSound.SHUTTER_CLICK);
         }
     };
+
+    private void updateImageOnUiThread() {
+        this.getActivity().runOnUiThread(() -> {
+            mVideoModel.setImageBuffer(latestImageBuffer);
+
+        });
+    }
 
     private Size chooseOptimalSize(Size[] choices, int width, int height, Size aspectRatio) {
         List<Size> bigEnough = new ArrayList<Size>();
@@ -301,9 +330,10 @@ public class PreviewFragment extends Fragment{
 
     private void createCameraPreviewSession() throws CameraAccessException {
         initSurface();
-        mPreviewBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+        mPreviewBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
 
         mPreviewBuilder.addTarget(mSurface);
+        mPreviewBuilder.addTarget(mImageReader.getSurface());
         mState = STATE_PREVIEW;
         mCameraDevice.createCaptureSession(Arrays.asList(mSurface, mImageReader.getSurface()), mSessionPreviewStateCallback, mPreviewHandler);
     }
@@ -433,7 +463,6 @@ public class PreviewFragment extends Fragment{
             e.printStackTrace();
         }
     }
-
 
 
     @Override

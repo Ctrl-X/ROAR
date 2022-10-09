@@ -4,6 +4,7 @@ import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,8 +16,11 @@ import com.example.hummerclient.arduino.Arduino;
 import com.example.hummerclient.arduino.ArduinoListener;
 import com.example.hummerclient.networking.DataSender;
 import com.example.hummerclient.networking.DataSenderRover;
+import com.example.hummerclient.networking.UDP_PORT;
 import com.example.hummerclient.networking.UdpTransmitter;
+import com.example.hummerclient.networking.VideoServer;
 import com.example.hummerclient.ui.UIRunnerInterface;
+import com.example.hummerclient.video.VideoViewModel;
 
 import java.nio.ByteBuffer;
 
@@ -27,6 +31,7 @@ import java.nio.ByteBuffer;
 public class RoverFragment extends BaseFragment implements  ArduinoListener {
 
     private Arduino arduino;
+    private VideoServer videoServer;
 
 
     public RoverFragment() {
@@ -57,6 +62,16 @@ public class RoverFragment extends BaseFragment implements  ArduinoListener {
         arduino = new Arduino(this.getContext());
         arduino.setArduinoListener(this);
         Log.i(TAG, "Rover is now Running...");
+
+        if(videoServer != null){
+            videoServer.kill();
+        }
+        videoServer = new VideoServer(getContext(),mVideoModel,UDP_PORT.SERVER_RTSP_RCV_PORT);
+        try {
+            videoServer.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -68,11 +83,14 @@ public class RoverFragment extends BaseFragment implements  ArduinoListener {
             arduino.close();
             arduino = null;
         }
+        if(videoServer != null){
+            videoServer.kill();
+        }
     }
 
     @Override
     UdpTransmitter buildDataReceiver() {
-        return buildDataReceiver(UdpTransmitter.ROVER_PORT);
+        return buildDataReceiver(UDP_PORT.ROVER);
     }
 
     @Override

@@ -16,7 +16,7 @@ import android.widget.TextView;
 import com.example.hummerclient.R;
 import com.example.hummerclient.databinding.FragmentMenuManetteBinding;
 import com.example.hummerclient.networking.NetworkUtils;
-import com.example.hummerclient.networking.UdpTransmitter;
+import com.example.hummerclient.networking.UDP_PORT;
 import com.example.hummerclient.game.GameModel;
 
 /**
@@ -61,7 +61,7 @@ public class MenuManetteFragment extends Fragment {
 
         gameModel.getMyAddr().observe(getViewLifecycleOwner(), myAddr -> {
             txt_ipAddressView.setText("Addresse WAN à indiquer pour le ROVER : " + myAddr);
-            ipToolTip.setText("Si vous etes derriere un routeur (ex : à la maison), ajoutez sur le routeur une redirection du port UDP " + UdpTransmitter.REMOTE_CONTROLLER_PORT + " vers l'addresse ip " + NetworkUtils.getIPAddress(true));
+            ipToolTip.setText("Si vous etes derriere un routeur (ex : à la maison), ajoutez sur le routeur une redirection du port UDP " + UDP_PORT.REMOTE_CONTROLLER + " vers l'addresse ip " + NetworkUtils.getIPAddress(true));
         });
 
         // Action button
