@@ -1,6 +1,9 @@
 package com.example.hummerclient;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,9 +16,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
+import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentContainerView;
 import androidx.lifecycle.ViewModelProvider;
@@ -35,6 +41,12 @@ import com.example.hummerclient.game.XboxPad;
 public class MainActivity extends AppCompatActivity {
     private static String TAG = "ROAR";
     XboxPad xboxPad = null;
+
+    private final String[] PERMISSIONS = {
+            Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -121,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         gameModel.getIsRunning().observe(this, isRunning -> {
             if (isRunning) {
                 Boolean isRemoteController = gameModel.getIsRemoteController().getValue();
-                if (isRemoteController) {
+                if (Boolean.TRUE.equals(isRemoteController)) {
                     startRemotecontroller();
                 } else {
                     startRover();
@@ -137,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.toolbar_menu, menu);
         MenuItem item = menu.getItem(0);
         item.setOnMenuItemClickListener(item1 -> {
+
             showStartMenu();
             return true;
         });
@@ -209,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
         ipChecker = new IpChecker(() -> runOnUiThread(updateIpAddress));
         ipChecker.start();
 
+
     }
 
 
@@ -230,11 +244,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startRover() {
-        RoverFragment fragment = new RoverFragment();
-        xboxPad = null;
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fullScreenContainer, fragment)
-                .commit();
+        if (hasPermissions(this)) {
+            RoverFragment fragment = new RoverFragment();
+            xboxPad = null;
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fullScreenContainer, fragment)
+                    .commit();
+        } else {
+            showPermissionsErrorAndRequest();
+        }
+
     }
 
     private void showStartMenu() {
@@ -278,5 +297,36 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+
+
+
+    private void requestPermissions() {
+
+        if (!hasPermissions(this)) {
+            ActivityCompat.requestPermissions(this, PERMISSIONS, 1);
+        }
+
+    }
+    private void showPermissionsErrorAndRequest() {
+        Toast.makeText(this, "You need permissions before", Toast.LENGTH_SHORT).show();
+        requestPermissions();
+    }
+
+    private boolean hasPermissions(Context context) {
+        return hasPermissions(context, PERMISSIONS);
+    }
+
+    private boolean hasPermissions(Context context, String... permissions) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

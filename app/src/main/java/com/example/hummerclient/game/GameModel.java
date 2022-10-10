@@ -50,6 +50,7 @@ public class GameModel extends ViewModel {
 
 
     public void setReceiverAddr(String receiverAddr) {
+
         mReceiverAddr.setValue(receiverAddr);
     }
 

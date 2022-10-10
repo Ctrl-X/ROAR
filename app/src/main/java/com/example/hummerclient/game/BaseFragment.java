@@ -13,7 +13,6 @@ import com.example.hummerclient.networking.DataSender;
 import com.example.hummerclient.networking.UDP_PORT;
 import com.example.hummerclient.networking.TransmitterType;
 import com.example.hummerclient.networking.UdpTransmitter;
-import com.example.hummerclient.video.VideoViewModel;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -27,7 +26,6 @@ public abstract class BaseFragment extends Fragment implements MotorActionnable{
     protected UdpTransmitter dataReceiver;
     private DataSender dataSender;
 
-    protected VideoViewModel mVideoModel;
 
     public BaseFragment() {
     }
@@ -37,8 +35,6 @@ public abstract class BaseFragment extends Fragment implements MotorActionnable{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mVideoModel = new ViewModelProvider(requireActivity()).get(VideoViewModel.class);
         gameModel = new ViewModelProvider(requireActivity()).get(GameModel.class);
 
     }
