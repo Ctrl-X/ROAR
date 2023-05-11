@@ -1,5 +1,6 @@
 package com.example.hummerclient.game;
 
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.MediaController;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import androidx.fragment.app.Fragment;
@@ -53,16 +55,26 @@ public class RemoteControllerFragment extends BaseFragment {
         binding = FragmentRemoteControllerBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         videoView = binding.videoView;
+//        MediaPlayer player = new MediaPlayer();
         MediaController mc = new MediaController(getContext());
         videoView.setMediaController(mc);
+
+        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+            public void onPrepared(MediaPlayer mp) {
+                videoView.start();
+            }
+        });
 
 
         gameModel.getReceiverAddr().observe(getViewLifecycleOwner(), receiverAddr -> {
                     if (!TextUtils.isEmpty(receiverAddr) && !Objects.equals(receiverAddr, previousReceiveAddr)) {
                         int port = UDP_PORT.SERVER_RTSP_RCV_PORT.getValue();
                         previousReceiveAddr = receiverAddr;
-                        String endpoint = "rtsp://" + receiverAddr + ":" + port + "/live/rover";
+                        String endpoint = "rtsp://" + receiverAddr + ":" + port;
+                        Log.i(TAG,"Receive Streaming from " + endpoint);
                         videoView.setVideoURI(Uri.parse(endpoint));
+                        getActivity().runOnUiThread(() -> Toast.makeText(requireActivity(), "Connecting to " + endpoint, Toast.LENGTH_LONG).show());
 
                     }
                 }
@@ -123,6 +135,7 @@ public class RemoteControllerFragment extends BaseFragment {
                 // We received the IP addresse of the rover, update it
                 String value = dataSet[1];
                 gameModel.setReceiverAddr("192.168.0.194");
+                //gameModel.setReceiverAddr(value);
 //                homeViewModel.setReceiverAddr(value);
                 Log.i(TAG, " updated Rover IP to " + value);
                 break;

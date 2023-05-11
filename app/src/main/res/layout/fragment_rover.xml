@@ -11,15 +11,46 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:AAEnabled="false"
-        app:aspectRatioMode="fill"
+        app:aspectRatioMode="adjust"
         app:isFlipHorizontal="false"
         app:isFlipVertical="false"
         app:keepAspectRatio="true"
         app:numFilters="1" />
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainerView2"
         android:name="com.example.hummerclient.game.SpeedUIFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_margin="10dp"
+        android:gravity="right"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txt_fps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FPS :"
+            android:textColor="#ffffff" />
+
+        <TextView
+            android:id="@+id/txt_bitrate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="bitrate"
+            android:textColor="#ffffff" />
+
+        <TextView
+            android:id="@+id/txt_streamRes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView" />
+
+    </LinearLayout>
 
 </FrameLayout>

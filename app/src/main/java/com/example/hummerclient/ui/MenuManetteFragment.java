@@ -61,7 +61,7 @@ public class MenuManetteFragment extends Fragment {
 
         gameModel.getMyAddr().observe(getViewLifecycleOwner(), myAddr -> {
             txt_ipAddressView.setText("Addresse WAN à indiquer pour le ROVER : " + myAddr);
-            ipToolTip.setText("Si vous etes derriere un routeur (ex : à la maison), ajoutez sur le routeur une redirection du port UDP " + UDP_PORT.REMOTE_CONTROLLER + " vers l'addresse ip " + NetworkUtils.getIPAddress(true));
+            ipToolTip.setText("Si vous etes derriere un routeur (ex : à la maison), ajoutez sur le routeur une redirection du port UDP " + UDP_PORT.REMOTE_CONTROLLER.getValue() + " vers l'addresse ip " + NetworkUtils.getIPAddress(true));
         });
 
         // Action button
