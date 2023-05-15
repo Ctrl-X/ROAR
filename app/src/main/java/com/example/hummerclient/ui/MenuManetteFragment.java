@@ -67,13 +67,6 @@ public class MenuManetteFragment extends Fragment {
         // Action button
         final Button actionButton = binding.btnManetteAction;
         actionButton.setOnClickListener(e -> {
-
-            // This is the remote controller, so for next launch, act as is.
-            SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putBoolean(getString(R.string.pref_isRemoteController), true);
-            editor.apply();
-
             gameModel.setIsRemoteController(true);
             gameModel.setIsRunning(true);
         });

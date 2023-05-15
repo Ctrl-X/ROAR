@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
  * create an instance of this fragment.
  */
 public class StartMenuFragment extends Fragment {
+    private static String TAG = "ROAR";
 
 
     MenuTabCollectionAdapter menuTabCollectionAdapter;
@@ -65,6 +67,7 @@ public class StartMenuFragment extends Fragment {
         //Retrieve the user pref to select the right tab if needed
         SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
         Boolean isRemoteController = sharedPref.getBoolean(getString(R.string.pref_isRemoteController), false);
+        Log.i(TAG, "isRemoteController" + isRemoteController);
 
 
         final TabLayout.Tab[] currentTab = {null};
@@ -77,16 +80,30 @@ public class StartMenuFragment extends Fragment {
                         tab.setText("ROVER");
                     } else {
                         tab.setText("MANETTE");
-                        if (isRemoteController) {
-                            currentTab[0] = tab;
-                        }
                     }
                 }
         ).attach();
-        if (currentTab[0] != null) {
-            // The remote controller has been selected
-            currentTab[0].select();
+
+        if (isRemoteController) {
+            viewPager.setCurrentItem(1);
         }
+
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                // Save the preference for net launch
+                SharedPreferences.Editor editor = sharedPref.edit();
+                if (position == 0) {
+                    // Rover tab
+                    editor.putBoolean(getString(R.string.pref_isRemoteController), false);
+                } else {
+                    // Manette Tab
+                    editor.putBoolean(getString(R.string.pref_isRemoteController), true);
+                }
+                editor.apply();
+            }
+        });
+
     }
 }
 

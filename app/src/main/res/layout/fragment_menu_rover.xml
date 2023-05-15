@@ -1,16 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp"
-    tools:context=".ui.MenuRoverFragment">
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switch_remote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        android:text="@string/remote_switch"
+        android:checked="false"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/layout_inputServer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
+        android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/inputServerAddr"
@@ -18,19 +24,19 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:hint="@string/home_client_ip"
-            android:visibility="visible" />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/btnAction"
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:text="@string/home_Start" />
+            android:visibility="gone" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
-</FrameLayout>
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/btnAction"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:text="@string/home_Start" />
+
+</LinearLayout>

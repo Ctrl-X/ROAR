@@ -13,10 +13,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 
 import com.example.hummerclient.R;
 import com.example.hummerclient.databinding.FragmentMenuRoverBinding;
 import com.example.hummerclient.game.GameModel;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 
 /**
@@ -29,6 +31,8 @@ public class MenuRoverFragment extends Fragment {
     private GameModel gameModel;
     private FragmentMenuRoverBinding binding;
     private TextInputEditText inputServerAddr;
+    private String remoteControllerAddr;
+    private boolean isControlledRemotely;
 
     public MenuRoverFragment() {
         // Required empty public constructor
@@ -59,52 +63,61 @@ public class MenuRoverFragment extends Fragment {
         gameModel = new ViewModelProvider(requireActivity()).get(GameModel.class);
         binding = FragmentMenuRoverBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        //Retrieve the user pref to select the right tab if needed
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        remoteControllerAddr = sharedPref.getString(getString(R.string.pref_serverAddr), "");
+        isControlledRemotely = sharedPref.getBoolean(getString(R.string.pref_isControlledRemotely), true);
 
 
+        // Text Input handler
         inputServerAddr = binding.inputServerAddr;
         inputServerAddr.setOnFocusChangeListener((View view, boolean hasFocus) -> {
             if (!hasFocus) {
-                String receiveAddr = inputServerAddr.getText().toString();
-                gameModel.setReceiverAddr(receiveAddr);
+                remoteControllerAddr = inputServerAddr.getText().toString();
+                gameModel.setReceiverAddr(remoteControllerAddr);
             }
+            // This is the remote controller, so for next launch, act as is.
+            SharedPreferences.Editor editor = sharedPref.edit();
+            String destAddress = inputServerAddr.getText().toString();
+            editor.putString(getString(R.string.pref_serverAddr),destAddress );
+            editor.apply();
         });
         gameModel.getReceiverAddr().observe(getViewLifecycleOwner(), inputServerAddr::setText);
 
-        //Retrieve the user pref to select the right tab if needed
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        String serverAddr = sharedPref.getString(getString(R.string.pref_serverAddr), "");
-        gameModel.setReceiverAddr(serverAddr);
+        // Mise en place du switch remote
+        SwitchMaterial switchRemote = binding.switchRemote;
+        switchRemote.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    inputServerAddr.setVisibility(View.VISIBLE);
+                    gameModel.setReceiverAddr(remoteControllerAddr);
+                } else {
+                    inputServerAddr.setVisibility(View.GONE);
+                    gameModel.setReceiverAddr(null);
+                }
+                // This is the remote controller, so for next launch, act as is.
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean(getString(R.string.pref_isControlledRemotely), isChecked);
+                editor.apply();
+            }
+        });
+        switchRemote.setChecked(isControlledRemotely);
 
 
         // Action button
         final Button actionButton = binding.btnAction;
         actionButton.setOnClickListener(e -> {
             inputServerAddr.clearFocus();
-
-            // This is the remote controller, so for next launch, act as is.
-            SharedPreferences.Editor editor = sharedPref.edit();
-            String destAddress = inputServerAddr.getText().toString();
-            editor.putString(getString(R.string.pref_serverAddr),destAddress );
-            editor.putBoolean(getString(R.string.pref_isRemoteController), false);
-            editor.apply();
-
             gameModel.setIsRemoteController(false);
             gameModel.setIsRunning(true);
         });
-
 
 
         // Inflate the layout for this fragment
         return root;
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        Bundle args = getArguments();
 
 
-//        TextView textView = ((TextView) view.findViewById(R.id.textObject1));
-//
-//        textView.setText(Integer.toString(args.getInt(ARG_OBJECT)));
-    }
 }

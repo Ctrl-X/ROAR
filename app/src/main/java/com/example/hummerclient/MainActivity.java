@@ -235,7 +235,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startRemotecontroller() {
-
         RemoteControllerFragment fragment = new RemoteControllerFragment();
         xboxPad = new XboxPad(fragment);
         getSupportFragmentManager().beginTransaction()
@@ -246,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
     private void startRover() {
         if (hasPermissions(this)) {
             RoverFragment fragment = new RoverFragment();
-            xboxPad = null;
+            xboxPad = new XboxPad(fragment);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fullScreenContainer, fragment)
                     .commit();

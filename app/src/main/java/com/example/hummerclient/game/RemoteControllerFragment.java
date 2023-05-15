@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.MediaController;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import androidx.fragment.app.Fragment;
 
@@ -32,7 +31,6 @@ public class RemoteControllerFragment extends BaseFragment {
 
     private FragmentRemoteControllerBinding binding;
     private String previousReceiveAddr = null;
-    private VideoView videoView;
 
     public RemoteControllerFragment() {
         //For remote controller :
@@ -54,17 +52,6 @@ public class RemoteControllerFragment extends BaseFragment {
         // Inflate the layout for this fragment
         binding = FragmentRemoteControllerBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-        videoView = binding.videoView;
-//        MediaPlayer player = new MediaPlayer();
-        MediaController mc = new MediaController(getContext());
-        videoView.setMediaController(mc);
-
-        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-
-            public void onPrepared(MediaPlayer mp) {
-                videoView.start();
-            }
-        });
 
 
         gameModel.getReceiverAddr().observe(getViewLifecycleOwner(), receiverAddr -> {
@@ -73,7 +60,8 @@ public class RemoteControllerFragment extends BaseFragment {
                         previousReceiveAddr = receiverAddr;
                         String endpoint = "rtsp://" + receiverAddr + ":" + port;
                         Log.i(TAG,"Receive Streaming from " + endpoint);
-                        videoView.setVideoURI(Uri.parse(endpoint));
+
+
                         getActivity().runOnUiThread(() -> Toast.makeText(requireActivity(), "Connecting to " + endpoint, Toast.LENGTH_LONG).show());
 
                     }
@@ -134,9 +122,8 @@ public class RemoteControllerFragment extends BaseFragment {
             case "IP":
                 // We received the IP addresse of the rover, update it
                 String value = dataSet[1];
-                gameModel.setReceiverAddr("192.168.0.194");
-                //gameModel.setReceiverAddr(value);
-//                homeViewModel.setReceiverAddr(value);
+//                gameModel.setReceiverAddr("192.168.0.194");
+                gameModel.setReceiverAddr(value);
                 Log.i(TAG, " updated Rover IP to " + value);
                 break;
         }
